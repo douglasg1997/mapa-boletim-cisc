@@ -1,0 +1,43 @@
+name: Publicar mapas CISC
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'CISC_Mapas_3_prontos_GitHub_Pages.zip'
+      - '.github/workflows/publicar-mapas.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Preparar arquivos
+        run: |
+          test -f CISC_Mapas_3_prontos_GitHub_Pages.zip
+          mkdir -p _site
+          unzip -q CISC_Mapas_3_prontos_GitHub_Pages.zip -d _site
+          test -f _site/index.html
+          test -f _site/areas-verdes/index.html
+          test -f _site/unidades-administrativas/index.html
+          test -f _site/hidrografia/index.html
+          touch _site/.nojekyll
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+      - name: Publicar no GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
